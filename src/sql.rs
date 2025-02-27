@@ -1,3 +1,4 @@
+use crate::error::InvalidSql;
 pub struct Row {
     pub columns : Vec<Column>
 }
@@ -91,10 +92,6 @@ impl Clone for Parameter {
     }
 }
 
-#[derive(Debug)]
-pub struct InvalidSql { 
-    msg: String
-}
 
 impl Statement { 
     pub fn new(statement: String, params: Option<Vec<Parameter>>) -> Self {
