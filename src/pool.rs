@@ -1,11 +1,13 @@
 use tokio::sync::{Mutex, mpsc};
 use std::sync::Arc;
-use tokio_postgres::{Client, NoTls};
+use tokio_postgres:: NoTls;
+
+use crate::client::ClientWrapper;
 
 #[derive(Debug)]
 pub struct ConnectionPool {
-    sender: mpsc::Sender<Client>,
-    reciever: Arc<Mutex<mpsc::Receiver<Client>>>
+    sender: mpsc::Sender<ClientWrapper>,
+    reciever: Arc<Mutex<mpsc::Receiver<ClientWrapper>>>
 }
 
 #[derive(Debug)]
@@ -25,17 +27,17 @@ impl ConnectionPool {
                     eprintln!("{e:?}")
             }
             });
-            sx.send(client).await.map_err(|e| ConnectionErr{msg: e.to_string()})?;
+            sx.send(ClientWrapper::new(client)).await.map_err(|e| ConnectionErr{msg: e.to_string()})?;
         }
         Ok(Self {sender: sx, reciever: Arc::new(Mutex::new(rx))})
     }
 
-    pub async fn get_connection(&self) -> Option<Client> { 
+    pub async fn get_connection(&self) -> Option<ClientWrapper> { 
         self.reciever.lock().await.recv().await
     }
 
-    pub async fn release_connection(&self, client: Client) {
-        self.sender.send(client).await;
+    pub async fn release_connection(&self, client: ClientWrapper) {
+        let _ = self.sender.send(client).await;
     }
 }
 

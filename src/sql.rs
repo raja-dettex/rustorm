@@ -68,10 +68,12 @@ pub enum ColumnValue {
     Blob(Vec<u8>)
 }
 
+#[derive(Clone)]
 pub struct Statement {
     statement: String,
     params: Option<Vec<Parameter>>
 }
+
 
 pub enum Parameter { 
     Column(String),
@@ -117,7 +119,7 @@ impl Statement {
                         Parameter::Column(str) => result.push_str(&format!("{}", str)),
                         Parameter::StringValue(str) => result.push_str(&format!("'{}'", str)),
                         Parameter::Int(int) => result.push_str(&format!("{}", int)),
-                        Parameter::Blob(items) => todo!(),
+                        Parameter::Blob(_) => todo!(),
                     }
                     ; // Properly wrap values in quotes
                     idx += 1;
